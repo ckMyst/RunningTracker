@@ -9,8 +9,8 @@ import requests
 import numpy as np
 import tkinter as tk
 import tkinter.font as ft
-from matplotlib import style
 from tkinter import messagebox
+from matplotlib import style
 from matplotlib import pyplot as plt
 # ========================
 main = tk.Tk()
@@ -23,7 +23,7 @@ def infoWin():
     global entry_weight, entry_goalWeight, entry_time, entry_user, entry_pass
     main.withdraw()
     infoWin = tk.Toplevel(main)
-    infoWin.geometry("280x210")
+    infoWin.geometry("300x230")
 
     Weight = tk.Label(infoWin, text='Weight:')
     Weight.grid(column=1, row=1)
@@ -72,7 +72,7 @@ def mainWin():
     Font.configure(size="14")
     Exit1.grid(column=1, row=1, ipadx=10, ipady=10)
     # Routine
-    Routine4 = tk.Button(mainWin, text="Routine", borderwidth=0.5, relief="solid", font=Font)
+    Routine4 = tk.Button(mainWin, text="Routine", borderwidth=0.5, relief="solid", font=Font, command=routineWin)
     Routine4.grid(column=1, row=2, pady=50, padx=10, ipadx=10, ipady=10)
     # Weather
     Weather5 = tk.Button(mainWin, text='Weather', borderwidth=0.5, relief="solid", font=Font, command=weatherWin)
@@ -119,8 +119,13 @@ def add_graph_info():
         [progress_ent.get(), current_weight_ent.get()])
 
 # ========================
+def rand_mile_amnt():
+    print("hello world")
+rand_mile_amnt()
+# ========================
 # Exports real-time data (into string) of weather from 'openweathermap.org'
 def weatherWin():
+    global weather
     weatherWin = tk.Toplevel(main)
     weatherWin.geometry("180x80")
     Font = ft.Font(family="Calibre", size=12)
@@ -139,7 +144,8 @@ def weatherWin():
         weather = ter[0]["description"]
         weatherShown = tk.Label(weatherWin, text='Description: ' + str(weather), font=Font)
         weatherShown.grid(column=1, row=3, sticky="W")
-        tempShown = tk.Label(weatherWin, text='Temperature: ' + str(round(temperature - 273.15)) + ' ˚C', font=Font)
+        farenheit = ((round(temperature - 273.15)) * 1.8) + 32
+        tempShown = tk.Label(weatherWin, text='Temperature: ' + str(farenheit) + ' ˚F', font=Font)
         tempShown.grid(column=1, row=2, sticky="W")
 # ========================
 # Primary window: user inputs existing data (reads csv) or creates a profile (writes to csv).
@@ -187,8 +193,9 @@ def progressWin():
 # Graphical visualizer of weight loss per day (data from 'graph_data.csv')
 # TODO: fix major error due to plt.show causing profile window to pop up once more
 def graphWin():
-    graphWin = tk.Toplevel(main)
-    graphWin.geometry("800x800")
+    # As the graph window is being opened, it's reopening the "Profile" window
+    # As a result, it's giving an error when I close the "Profile" window before
+    # the graph window and the "main" window are closed
     style.use('grayscale')
     x, y = np.loadtxt('graph_data.csv', unpack=True, delimiter=",")
     plt.plot(x, y)
@@ -196,13 +203,17 @@ def graphWin():
     plt.xlabel('Days')
     plt.ylabel('Weight')
 
-    plt.show(graphWin)
+    plt.show()
 # ========================
 # TODO: create real-time info for whether the user can run
 def routineWin():
+
+    if str(weather) == "rain" and "thunderstorm" and "snow" and "shower rain":
+        print("Test")
+    else:
+        print("Test 2")
     # make if, elif, else statement for global variables that say whether the weather is optimal
-    print("Hello World")
-routineWin()
+    messagebox.showinfo('information','Hello World')
 # ========================
 # TODO: create real-time calendar
 def calendarWin():
