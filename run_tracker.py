@@ -112,7 +112,6 @@ def add_profile_info():
 # ========================
 # Imports data from progress entry into graph csv
 def add_graph_info():
-    print("Hello World")
     with open('graph_data.csv', 'a') as f:
         write = csv.writer(f, quoting=csv.QUOTE_ALL)
         write.writerow(
