@@ -1,5 +1,4 @@
 '''
-Connor Kissack
 Running Tracker
 '''
 import csv
