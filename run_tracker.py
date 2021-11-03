@@ -6,7 +6,6 @@ import csv
 import json
 import time
 import random
-# (Used in messagebox to show random amount of miles the user needs to run on the specific day)
 import numpy as np
 import requests
 import matplotlib
@@ -16,7 +15,7 @@ import tkinter as tk
 matplotlib.use('TkAgg')
 from matplotlib import style
 import matplotlib.pyplot as plt
-
+from tkinter import messagebox
 # ========================
 main = tk.Tk()
 main.title('Running Tracker')
@@ -27,38 +26,29 @@ main.geometry('280x106')
 # Called when new profile button is clicked, allowing user to input new information about
 # weight, goal weight, free time
 def infoWin():
-    global entry_weight, entry_goalWeight, entry_time, entry_user, entry_pass, entry_maxRun
+    global infoWin, entry_user, entry_pass, entry_maxRun
     main.withdraw()
     infoWin = tk.Toplevel(main)
-    infoWin.geometry("290x170")
+    infoWin.geometry("290x120")
 
-    goalWeight = tk.Label(infoWin, text='Goal Weight:')
-    goalWeight.grid(column=1, row=1)
-    time = tk.Label(infoWin, text='Free time:')
-    time.grid(column=1, row=2)
     userNew = tk.Label(infoWin, text='Username:')
-    userNew.grid(column=1, row=3)
+    userNew.grid(column=1, row=1)
     passNew = tk.Label(infoWin, text='Password:')
-    passNew.grid(column=1, row=4)
+    passNew.grid(column=1, row=2)
     largeRun = tk.Label(infoWin, text='Max Miles:')
-    largeRun.grid(column=1, row=5)
+    largeRun.grid(column=1, row=3)
     # TODO: move inputted strings to next row
-    entry_goalWeight = tk.Entry(infoWin)
-    entry_goalWeight.grid(column=2, row=1)
-
-    entry_time = tk.Entry(infoWin)
-    entry_time.grid(column=2, row=2)
 
     entry_user = tk.Entry(infoWin)
-    entry_user.grid(column=2, row=3)
+    entry_user.grid(column=2, row=1)
     entry_pass = tk.Entry(infoWin, show="•")
-    entry_pass.grid(column=2, row=4)
+    entry_pass.grid(column=2, row=2)
 
     entry_maxRun = tk.Entry(infoWin)
-    entry_maxRun.grid(column=2, row=5)
+    entry_maxRun.grid(column=2, row=3)
 
     info_submit = tk.Button(infoWin, text='Submit', command=add_profile_info)
-    info_submit.grid(column=1, row=6)
+    info_submit.grid(column=1, row=4)
 
 
 # ========================
@@ -66,25 +56,28 @@ def infoWin():
 def mainWin():
     main.withdraw()
     mainWin = tk.Toplevel(main)
-    mainWin.geometry("450x300")
+    mainWin.geometry("438x245")
     # Exit (Closes & terminates the running program)
     exit1 = tk.Button(mainWin, text="Exit", borderwidth=0.5, relief="solid", command=exit)
-    exit1.grid(column=1, row=1, ipadx=10, ipady=10)
+    exit1.grid(column=1, row=1, ipadx=46, ipady=12, padx=10, pady=10, sticky="N")
     # Routine
-    routine4 = tk.Button(mainWin, text="Routine", borderwidth=0.5, relief="solid", command=routineWin)
-    routine4.grid(column=1, row=2, pady=50, padx=10, ipadx=10, ipady=10)
+    routine4 = tk.Button(mainWin, text="Routine", borderwidth=0.5, relief="solid", command=specific_routine)
+    routine4.grid(column=1, row=1, ipadx=34, ipady=12, padx=10, pady=10, sticky="S")
+    # User Welcome
+    welcome5 = tk.Label(mainWin, text=(User1.get() or entry_user.get()), borderwidth=0.5, relief="solid")
+    welcome5.grid(column=2, row=1, ipadx=30, ipady=12, padx=10, pady=10, sticky="N")
     # Weather
-    weather5 = tk.Button(mainWin, text='Weather', borderwidth=0.5, relief="solid", command=weatherWin)
-    weather5.grid(column=2, row=1, ipadx=10, ipady=10)
-    # Date & Time
+    weather6 = tk.Button(mainWin, text='Weather', borderwidth=0.5, relief="solid", command=weatherWin)
+    weather6.grid(column=2, row=2, ipadx=30, ipady=40, padx=10, pady=10)
+    # Date & Time (inclusion of calendar)
     date7 = tk.Button(mainWin, text="Date & Time", borderwidth=0.5, relief="solid", command=calendarWin)
-    date7.grid(column=2, row=2, pady=30, ipady=10, ipadx=10)
+    date7.grid(column=1, row=2, ipady=40, ipadx=20, padx=10)
     # Progress
     progress8 = tk.Button(mainWin, text="Progress", borderwidth=0.5, relief="solid", command=progressWin)
-    progress8.grid(column=3, row=1, pady=10, ipadx=10, ipady=10)
+    progress8.grid(column=3, row=1, ipadx=30, ipady=40, padx=10, pady=10)
     # Weight Fluctuation Graph
     graph9 = tk.Button(mainWin, text="Weight Tracker", borderwidth=0.5, relief="solid", command=graphWin)
-    graph9.grid(column=3, row=2, pady=20, padx=20, ipadx=10, ipady=10)
+    graph9.grid(column=3, row=2, ipadx=10, ipady=40, padx=10)
 
 
 # ========================
@@ -93,7 +86,7 @@ def get_profile_info():
     with open('profile_checker.csv', 'r') as f:
         user_pass_read = csv.reader(f)
         for column in user_pass_read:
-            if User1.get() == column[2] and Pass1.get() == column[3]:
+            if User1.get() == column[0] and Pass1.get() == column[1]:
                 mainWin()
 
 
@@ -107,9 +100,8 @@ def add_profile_info():
 
     with open('profile_checker.csv', 'a') as f:
         write = csv.writer(f, quoting=csv.QUOTE_NONNUMERIC)
-        write.writerow([entry_goalWeight.get(), entry_time.get(), entry_user.get(),
-                        entry_pass.get(), entry_maxRun.get()])
-
+        write.writerow([entry_user.get(), entry_pass.get(), entry_maxRun.get()])
+        infoWin.withdraw()
         mainWin()
 
 
@@ -121,6 +113,8 @@ def add_graph_info():
         graph_write = csv.writer(f, quoting=csv.QUOTE_NONE)
         graph_write.writerow([progress_ent.get(), current_weight_ent.get()])
 
+
+# ========================
 def add_mile_info():
     file_name = User1.get()
     with open(file_name + '.csv', 'a') as f:
@@ -131,9 +125,32 @@ def add_mile_info():
 # ========================
 def time_info():
     time_period.grid(column=1, row=1)
-    moment = time.strftime('%m/%d/%y %H:%M:%S')
+    moment = time.strftime('Today is: %m/%d/%y and the time is: %H:%M:%S')
     time_period.config(text=moment)
     time_period.after(1000, time_info)
+
+
+# ========================
+def routine_info(max_miles):
+    mile_amount = random.randint(1, max_miles)
+    mile_amount_str = str(mile_amount)
+    availability = messagebox.askyesno(title='Running Availability', message='Are you able to run today?')
+    if availability:
+        messagebox.showinfo('information', 'Today you should run: ' + mile_amount_str + ' miles')
+    else:
+        extra_miles = str(mile_amount + 2)
+        messagebox.showinfo('information', 'Tomorrow you should run: ' + extra_miles + ' miles')
+
+# ========================
+def specific_routine():
+    user_routine = User1.get() or entry_user.get()
+
+    with open('profile_checker.csv', 'r') as f:
+        profile_read = csv.reader(f)
+        for row in profile_read:
+            if user_routine == row[0]:
+                print((row[2]))
+                routine_info(int(row[2]))
 
 
 # ========================
@@ -198,6 +215,7 @@ def Profile():
     new_profile = tk.Button(main, text='New Profile', command=infoWin)
     new_profile.grid(column=1, row=6)
 
+
 Profile()
 
 
@@ -227,6 +245,8 @@ def progressWin():
     graph_data_submit.grid(column=1, row=3, ipadx=28)
 
     # ========================
+
+
 def graphWin():
     # User's data from 'profile_checker' is exported to the user's specific
     # csv file where the data is then input into a graph
@@ -244,41 +264,12 @@ def graphWin():
     plt.ylabel('Weight (in lbs)')
     plt.show()
 
-
-# ========================
-# TODO: create real-time info for whether the user can run
-from tkinter import messagebox
-# TODO: (2 options): solely export "entry_maxRun" into file_name + '.csv' OR have the "entry box for
-# "entry_maxRun" be with the progress window. THIS IS IMPORTANT AS THE ROUTINE WINDOW WILL CALL FROM
-# EITHER CSV TO MAKE A RANDOM AMOUNT OF MILES THE USER NEEDS TO RUN FOR THE DAY
-
-def routineWin():
-    file_name = User1.get()
-    with open(file_name + '.csv') as f:
-        read_progress = csv.reader(f, delimiter=",")
-        for column in read_progress:
-            if column[2] == entry_maxRun.get():
-                print(column[2])
-
-    mile_number = random.randint(1, 10), "Miles to run"
-    messagebox.showinfo('information', 'Test')
-
-
-#         mile_read = csv.DictReader(f)
-#         for column in mile_read:
-# TODO: Error - either want to pass the entries for goal weight, free time, and max miles from the profile_info function
-#       to this function or just use DictReader and pass the specified values for a specific user
-#       announcement = column['Goal Weight' 'Free Time' 'Maximum Miles']
-# if wr == column[0] and column[1] and column[4]:
-#   announcement = entry_goalWeight.get(), entry_time.get(), entry_maxRun.get()
-#   messagebox.showinfo('information', announcement)
-# make if, elif, else statement for global variables that say whether the weather is optimal
 # ========================
 # TODO: create real-time calendar
 def calendarWin():
     global time_period
     calendarWin = tk.Toplevel(main)
-    calendarWin.geometry("400x400")
+    calendarWin.geometry("280x40")
 
     cal_title = tk.Label(calendarWin, text="calendar")
     cal_title.grid(column=1, row=1, stick="N")
