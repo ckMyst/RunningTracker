@@ -26,7 +26,7 @@ main.geometry('280x106')
 # Called when new profile button is clicked, allowing user to input new information about
 # weight, goal weight, free time
 def infoWin():
-    global infoWin, entry_user, entry_pass, entry_maxRun
+    global infoWin, entry_user, entry_pass, entry_maxRun, entry_mileTime
     main.withdraw()
     infoWin = tk.Toplevel(main)
     infoWin.geometry("290x120")
@@ -37,6 +37,8 @@ def infoWin():
     passNew.grid(column=1, row=2)
     largeRun = tk.Label(infoWin, text='Max Miles:')
     largeRun.grid(column=1, row=3)
+    mileTime = tk.Label(infoWin, text='Mile Time: ')
+    mileTime.grid(column=1, row=4)
     # TODO: move inputted strings to next row
 
     entry_user = tk.Entry(infoWin)
@@ -47,8 +49,11 @@ def infoWin():
     entry_maxRun = tk.Entry(infoWin)
     entry_maxRun.grid(column=2, row=3)
 
+    entry_mileTime = tk.Entry(infoWin)
+    entry_mileTime.grid(column=2, row=4)
+
     info_submit = tk.Button(infoWin, text='Submit', command=add_profile_info)
-    info_submit.grid(column=1, row=4)
+    info_submit.grid(column=1, row=5)
 
 
 # ========================
@@ -100,9 +105,10 @@ def add_profile_info():
 
     with open('profile_checker.csv', 'a') as f:
         write = csv.writer(f, quoting=csv.QUOTE_NONNUMERIC)
-        write.writerow([entry_user.get(), entry_pass.get(), entry_maxRun.get()])
+        write.writerow([entry_user.get(), entry_pass.get(), entry_maxRun.get(), entry_mileTime.get()])
         infoWin.withdraw()
         mainWin()
+# ========================
 
 
 # ========================
@@ -131,15 +137,18 @@ def time_info():
 
 
 # ========================
-def routine_info(max_miles):
+def routine_info(max_miles, mile_time):
     mile_amount = random.randint(1, max_miles)
     mile_amount_str = str(mile_amount)
     availability = messagebox.askyesno(title='Running Availability', message='Are you able to run today?')
     if availability:
-        messagebox.showinfo('information', 'Today you should run: ' + mile_amount_str + ' miles')
+        messagebox.showinfo('information', 'Today you should run: ' + mile_amount_str + ' miles.'
+                            + ' Remember, your average mile time is: ' + mile_time)
     else:
         extra_miles = str(mile_amount + 2)
-        messagebox.showinfo('information', 'Tomorrow you should run: ' + extra_miles + ' miles')
+        messagebox.showinfo('information', 'Tomorrow you should run: ' + extra_miles + ' miles.'
+                            + ' Remember, your average mile time is: ' + mile_time)
+
 
 # ========================
 def specific_routine():
@@ -150,7 +159,7 @@ def specific_routine():
         for row in profile_read:
             if user_routine == row[0]:
                 print((row[2]))
-                routine_info(int(row[2]))
+                routine_info(int(row[2]), row[3])
 
 
 # ========================
@@ -263,6 +272,7 @@ def graphWin():
     plt.xlabel('Days of Progress')
     plt.ylabel('Weight (in lbs)')
     plt.show()
+
 
 # ========================
 # TODO: create real-time calendar
