@@ -16,6 +16,7 @@ matplotlib.use('TkAgg')
 from matplotlib import style
 import matplotlib.pyplot as plt
 from tkinter import messagebox
+
 # ========================
 main = tk.Tk()
 main.title('Running Tracker')
@@ -26,10 +27,10 @@ main.geometry('280x106')
 # Called when new profile button is clicked, allowing user to input new information about
 # weight, goal weight, free time
 def infoWin():
-    global infoWin, entry_user, entry_pass, entry_maxRun, entry_mileTime
+    global infoWin, entry_user, entry_pass, entry_maxRun, entry_mileTime, entry_goalWeight
     main.withdraw()
     infoWin = tk.Toplevel(main)
-    infoWin.geometry("290x120")
+    infoWin.geometry("290x166")
 
     userNew = tk.Label(infoWin, text='Username:')
     userNew.grid(column=1, row=1)
@@ -39,6 +40,8 @@ def infoWin():
     largeRun.grid(column=1, row=3)
     mileTime = tk.Label(infoWin, text='Mile Time: ')
     mileTime.grid(column=1, row=4)
+    goalWeight = tk.Label(infoWin, text='Goal Weight:')
+    goalWeight.grid(column=1, row=5, sticky="W")
     # TODO: move inputted strings to next row
 
     entry_user = tk.Entry(infoWin)
@@ -52,8 +55,11 @@ def infoWin():
     entry_mileTime = tk.Entry(infoWin)
     entry_mileTime.grid(column=2, row=4)
 
+    entry_goalWeight = tk.Entry(infoWin)
+    entry_goalWeight.grid(column=2, row=5)
+
     info_submit = tk.Button(infoWin, text='Submit', command=add_profile_info)
-    info_submit.grid(column=1, row=5)
+    info_submit.grid(column=1, row=6, ipadx=16)
 
 
 # ========================
@@ -83,6 +89,9 @@ def mainWin():
     # Weight Fluctuation Graph
     graph9 = tk.Button(mainWin, text="Weight Tracker", borderwidth=0.5, relief="solid", command=graphWin)
     graph9.grid(column=3, row=2, ipadx=10, ipady=40, padx=10)
+    # Weight Loss Projection
+    analyzer10 = tk.Button(mainWin, text="Projection", borderwidth=0.5, relief="solid", command=weightWin)
+    analyzer10.grid(column=2, row=1, ipadx=26, ipady=12, padx=10, pady=10, sticky="S")
 
 
 # ========================
@@ -92,6 +101,9 @@ def get_profile_info():
         user_pass_read = csv.reader(f)
         for column in user_pass_read:
             if User1.get() == column[0] and Pass1.get() == column[1]:
+                # Since this (target weight) works for this specific user all you need to do is have this piece of data
+                # be called when you're pressing the progress button so it can be written in it.
+                print(column[4])
                 mainWin()
 
 
@@ -105,9 +117,12 @@ def add_profile_info():
 
     with open('profile_checker.csv', 'a') as f:
         write = csv.writer(f, quoting=csv.QUOTE_NONNUMERIC)
-        write.writerow([entry_user.get(), entry_pass.get(), entry_maxRun.get(), entry_mileTime.get()])
+        write.writerow([entry_user.get(), entry_pass.get(), entry_maxRun.get(), entry_mileTime.get(),
+                        entry_goalWeight.get()])
         infoWin.withdraw()
         mainWin()
+
+
 # ========================
 
 
@@ -142,12 +157,13 @@ def routine_info(max_miles, mile_time):
     mile_amount_str = str(mile_amount)
     availability = messagebox.askyesno(title='Running Availability', message='Are you able to run today?')
     if availability:
-        messagebox.showinfo('information', 'Today you should run: ' + mile_amount_str + ' miles.'
+        messagebox.showinfo('information', 'Today you should run: ' + mile_amount_str + ' mile(s).'
                             + ' Remember, your average mile time is: ' + mile_time)
     else:
         extra_miles = str(mile_amount + 2)
-        messagebox.showinfo('information', 'Tomorrow you should run: ' + extra_miles + ' miles.'
-                            + ' Remember, your average mile time is: ' + mile_time)
+        messagebox.showinfo('information', 'You should have ran ' + mile_amount_str + ' mile(s). Instead, tomorrow '
+                                                                                      'you need to run: '
+                            + extra_miles + ' miles.' + ' Remember, your average mile time is: ' + mile_time)
 
 
 # ========================
@@ -275,7 +291,7 @@ def graphWin():
 
 
 # ========================
-# TODO: create real-time calendar
+# A real-time calendar
 def calendarWin():
     global time_period
     calendarWin = tk.Toplevel(main)
@@ -288,6 +304,47 @@ def calendarWin():
     time_period.grid(column=1, row=2)
 
     time_info()
+
+
+# ========================
+# Displays if the user is in extreme, normal, or slow weight loss
+def weightWin():
+    weightWin = tk.Toplevel()
+    weightWin.geometry("490x60")
+    # Since this (target weight) works for this specific user all you need to do is have this piece of data
+    # be called when you're pressing the progress button so it can be written in it.
+
+    with open('profile_checker.csv', 'r') as f:
+        user_pass_read = csv.reader(f)
+        for column in user_pass_read:
+            if User1.get() == column[0] and Pass1.get() == column[1]:
+                goal = column[4]
+
+    file_name = User1.get() or entry_user.get()
+    weight_stats = pd.read_csv(file_name + '.csv')
+    current_weight = int(weight_stats["Weight"].values[-1])
+    initial_weight = int(weight_stats["Weight"].values[0])
+
+    weight_percentage = ((initial_weight - current_weight) / initial_weight) * 100
+    if weight_percentage >= 15:
+        extreme_loss = tk.Label(weightWin, text=("Your weight percentage, " + str(round(weight_percentage, 2)) + "%" +
+                                                 ", states that you are in extreme weight loss."))
+        extreme_loss.grid(column=1, row=1)
+        extreme_loss_goal = tk.Label(weightWin, text="You are on track with your weight goal of " + goal + " pounds.")
+        extreme_loss_goal.grid(column=1, row=2, sticky="W")
+    elif weight_percentage <= 14:
+        normal_loss = tk.Label(weightWin, text=("Your weight percentage, " + str(round(weight_percentage, 2)) + "%" +
+                                                ", states that you are in normal weight loss."))
+        normal_loss.grid(column=1, row=1)
+        normal_loss_goal = tk.Label(weightWin, text="You are on track with your weight goal of " + goal + " pounds.")
+        normal_loss_goal.grid(column=1, row=2, sticky="W")
+    else:
+        no_loss = tk.Label(weightWin, text=("Your weight percentage, " + str(round(weight_percentage, 2)) + "%" +
+                                            ", states that you are not losing any weight."))
+        no_loss.grid(column=1, row=1)
+
+        no_loss_goal = tk.Label(weightWin, text="You are not on track with your weight goal of " + goal + " pounds.")
+        no_loss_goal.grid(column=1, row=2, sticky="W")
 
 
 # ========================
